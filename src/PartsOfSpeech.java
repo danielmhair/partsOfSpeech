@@ -60,8 +60,12 @@ public class PartsOfSpeech {
         }
 
         for (String[] ngram: ngrams) {
-            ArrayList<ProbabilityPair> list = this.transitionModel.get(ngram[0]);
-            if (list != null && !list.contains(ngram[ngram.length-1])) {
+            ArrayList<ProbabilityPair> list;
+            if (this.transitionModel.get(ngram[0]) != null)
+                list = this.transitionModel.get(ngram[0]);
+            else
+                list = new ArrayList<>();
+            if (!list.contains(ngram[ngram.length-1])) {
                 list.add(new ProbabilityPair(ngram[ngram.length-1], 1.0));
             }
             else {
@@ -71,6 +75,10 @@ public class PartsOfSpeech {
         }
 
         System.out.println(this.transitionModel.toString());
+    }
+
+    private void updateProbabilities() {
+
     }
 
     public static void main(String[] args) {
@@ -83,9 +91,13 @@ public class PartsOfSpeech {
                 }
             });
 
-            new PartsOfSpeech().modelLanguage(words, 2);
+            PartsOfSpeech POS = new PartsOfSpeech();
+            POS.modelLanguage(words, 2);
+            POS.updateProbabilities();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 }
