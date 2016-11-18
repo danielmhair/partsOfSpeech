@@ -92,11 +92,57 @@ public class PartsOfSpeech {
     }
 
     private void tagLanguage(ArrayList<String> words) {
-        //TODO: add functionality
+        ArrayList<String[]> ngrams = new ArrayList<>();
+        for (int i = 0; i < words.size(); i++) {
+            String[] splitTag = words.get(i).split("_");
+            String[] ngram = new String[2];
+            if (i < words.size()- 2) {
+                if (this.transitionModel.get(splitTag[1]) != null) {
+                    this.transitionModel.put(splitTag[1], new ArrayList<>());
+                }
+                for (int j = 0; j < 2; j++) {
+                    ngram[j] = words.get(i+j).split("_")[1];
+                }
+                ngrams.add(ngram);
+            }
+        }
+
+        for (String[] ngram: ngrams) {
+            ArrayList<ProbabilityPair> list;
+            if (this.transitionModel.get(ngram[0]) != null)
+                list = this.transitionModel.get(ngram[0]);
+            else {
+                list = new ArrayList<>();
+                this.transitionModel.put(ngram[0], list);
+            }
+            if (find(list, ngram[ngram.length-1]) == null) {
+                list.add(new ProbabilityPair(ngram[ngram.length-1], 1.0));
+            }
+            else {
+                ProbabilityPair pair = list.get(list.indexOf(find(list, ngram[ngram.length-1])));
+                pair.setValue(pair.getValue() + 1.0);
+            }
+        }
     }
 
-    private void modelSensor() {
-        //TODO: add functionality
+    private void modelSensor(ArrayList<String> words) {
+        for (String word : words) {
+            String[] splitTag = word.split("_");
+            ArrayList<ProbabilityPair> list;
+            if (this.transitionModel.get(splitTag[1]) != null)
+                list = this.transitionModel.get(splitTag[1]);
+            else {
+                list = new ArrayList<>();
+                this.transitionModel.put(splitTag[1], list);
+            }
+            if (find(list, splitTag[0]) == null) {
+                list.add(new ProbabilityPair(splitTag[0], 1.0));
+            }
+            else {
+                ProbabilityPair pair = list.get(list.indexOf(find(list, splitTag[0])));
+                pair.setValue(pair.getValue() + 1.0);
+            }
+        }
     }
 
     private void updateProbabilities(Map<String, ArrayList<ProbabilityPair>> map) {
@@ -138,7 +184,9 @@ public class PartsOfSpeech {
     }
 
     private String generateTags(ArrayList<String> words) {
-        //TODO: add functionality
+        //ArrayList<> forwardValue = new ArrayList<>();
+        //for (int i = 1; i < words.size(); i++)
+          //TODO: add functionality
         return "";
     }
 
@@ -195,7 +243,8 @@ public class PartsOfSpeech {
             POS.reset();
             POS.tagLanguage(words);
             POS.updateProbabilities(POS.transitionModel);
-            POS.modelSensor();
+
+            POS.modelSensor(words);
             POS.updateProbabilities(POS.sensorModel);
 
             words.clear();
