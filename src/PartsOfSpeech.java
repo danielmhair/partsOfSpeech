@@ -129,11 +129,11 @@ public class PartsOfSpeech {
         for (String word : words) {
             String[] splitTag = word.split("_");
             ArrayList<ProbabilityPair> list;
-            if (this.transitionModel.get(splitTag[1]) != null)
-                list = this.transitionModel.get(splitTag[1]);
+            if (this.sensorModel.get(splitTag[1]) != null)
+                list = this.sensorModel.get(splitTag[1]);
             else {
                 list = new ArrayList<>();
-                this.transitionModel.put(splitTag[1], list);
+                this.sensorModel.put(splitTag[1], list);
             }
             if (find(list, splitTag[0]) == null) {
                 list.add(new ProbabilityPair(splitTag[0], 1.0));
@@ -181,6 +181,10 @@ public class PartsOfSpeech {
             result += seed;
         }
         return result;
+    }
+
+    private Double forward(Double message) {
+        return 0.0;
     }
 
     private String generateTags(ArrayList<String> words) {
