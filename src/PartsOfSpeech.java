@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,10 +9,12 @@ import java.util.Random;
 
 public class PartsOfSpeech {
     private Map<String, ArrayList<ProbabilityPair>> transitionModel;
+    private Map<String, ArrayList<ProbabilityPair>> sensorModel;
     private Random rand;
 
     PartsOfSpeech() {
         this.transitionModel = new HashMap<>();
+        this.sensorModel = new HashMap<>();
         rand = new Random();
     }
 
@@ -88,8 +91,16 @@ public class PartsOfSpeech {
         }
     }
 
-    private void updateProbabilities() {
-        for (Map.Entry<String, ArrayList<ProbabilityPair>> entry : this.transitionModel.entrySet())
+    private void tagLanguage(ArrayList<String> words) {
+        //TODO: add functionality
+    }
+
+    private void modelSensor() {
+        //TODO: add functionality
+    }
+
+    private void updateProbabilities(Map<String, ArrayList<ProbabilityPair>> map) {
+        for (Map.Entry<String, ArrayList<ProbabilityPair>> entry : map.entrySet())
         {
             Double total = 0.0;
             for (ProbabilityPair pair : entry.getValue())
@@ -126,7 +137,27 @@ public class PartsOfSpeech {
         return result;
     }
 
+    private String generateTags(ArrayList<String> words) {
+        //TODO: add functionality
+        return "";
+    }
+
+    /**
+     * Part 1
+     * filename - to read probabilities from
+     * seedword - to start generating text from
+     * count - length of generated text
+     *
+     * Part 2
+     * filename - training data
+     * filename - testing data
+     * 
+     * @param args
+     */
     public static void main(String[] args) {
+        PartsOfSpeech POS = new PartsOfSpeech();
+
+        // Part 1 //
         try {
             ArrayList<String> words = new ArrayList<>();
             Files.lines(new File(args[0]).toPath()).forEach(line -> {
@@ -136,15 +167,60 @@ public class PartsOfSpeech {
                 }
             });
 
-            PartsOfSpeech POS = new PartsOfSpeech();
             POS.modelLanguage(words, 2);
-            POS.updateProbabilities();
+            POS.updateProbabilities(POS.transitionModel);
 
-            String genesis = POS.generateText(args[1], 25);
-            System.out.println(genesis);
+            String genesis = POS.generateText(args[1], Integer.parseInt(args[2]));
+            try{
+                PrintWriter writer = new PrintWriter("tests/generated.txt", "UTF-8");
+                writer.println(genesis);
+                writer.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        // Part 2 //
+        try {
+            ArrayList<String> words = new ArrayList<>();
+            Files.lines(new File(args[3]).toPath()).forEach(line -> {
+                String[] lineWords = line.split(" ");
+                for (String word: lineWords) {
+                    words.add(word);
+                }
+            });
+
+            POS.reset();
+            POS.tagLanguage(words);
+            POS.updateProbabilities(POS.transitionModel);
+            POS.modelSensor();
+            POS.updateProbabilities(POS.sensorModel);
+
+            words.clear();
+            Files.lines(new File(args[4]).toPath()).forEach(line -> {
+                String[] lineWords = line.split(" ");
+                for (String word: lineWords) {
+                    words.add(word);
+                }
+            });
+            String tags = POS.generateTags(words);
+            try{
+                PrintWriter writer = new PrintWriter("tests/tagged.txt", "UTF-8");
+                writer.println(tags);
+                writer.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void reset() {
+        this.transitionModel = new HashMap<>();
+        this.sensorModel = new HashMap<>();
     }
 
 }
