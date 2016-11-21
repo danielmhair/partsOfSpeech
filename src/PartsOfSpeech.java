@@ -247,14 +247,14 @@ public class PartsOfSpeech {
                     words.add(word);
                 }
             });
-            String tags = POS.generateTags(words);
-            try{
-                PrintWriter writer = new PrintWriter("tests/tagged.txt", "UTF-8");
-                writer.println(tags);
-                writer.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            ArrayList<Map<String, ProbNode>> tags = POS.viterbi(words);
+//            try{
+//                PrintWriter writer = new PrintWriter("tests/tagged.txt", "UTF-8");
+//                writer.println(tags);
+//                writer.close();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
         } catch (IOException e) {
             e.printStackTrace();
         }
