@@ -183,17 +183,6 @@ public class PartsOfSpeech {
         return result;
     }
 
-    private Double forward(Double message) {
-        return 0.0;
-    }
-
-    private String generateTags(ArrayList<String> words) {
-        //ArrayList<> forwardValue = new ArrayList<>();
-        //for (int i = 1; i < words.size(); i++)
-          //TODO: add functionality
-        return "";
-    }
-
     /**
      * Part 1
      * filename - to read probabilities from
