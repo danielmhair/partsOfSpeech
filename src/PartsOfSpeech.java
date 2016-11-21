@@ -271,6 +271,90 @@ public class PartsOfSpeech {
         }
     }
 
+    public class ProbNode {
+        private double prob;
+        private String previous;
+
+        public ProbNode(double prob, String previous) {
+            this.prob = prob;
+            this.previous = previous;
+        }
+
+        public ProbNode() {
+            this.prob = 0.0;
+            this.previous = null;
+        }
+
+        public double getProb() {
+            return prob;
+        }
+
+        public void setProb(double prob) {
+            this.prob = prob;
+        }
+
+        public String getPrevious() {
+            return previous;
+        }
+
+        public void setPrevious(String previous) {
+            this.previous = previous;
+        }
+    }
+
+    private ArrayList<Map<String, ProbNode>> viterbi(ArrayList<String> obs) {
+        ArrayList<Map<String, ProbNode>> SequenceProb = new ArrayList<>();
+
+        Map<String, ProbNode> initialStates = new HashMap<>();
+        for (Map.Entry<String, ArrayList<ProbabilityPair>> entries : this.sensorModel.entrySet()) {
+            initialStates.put(entries.getKey(), new ProbNode(0.0, null));
+            if (entries.getKey().equals("DT")) {
+                initialStates.get("DT").setProb(1.0);
+            }
+        }
+        SequenceProb.add(initialStates);
+
+        //Forward
+        for (int t = 0; t < obs.size(); t++) {
+            Map<String, ProbNode> curStates = new HashMap<>();
+            for (Map.Entry<String, ArrayList<ProbabilityPair>> states : this.transitionModel.entrySet()) {
+                double max = 0.0;
+                String stateWithMax = null;
+                for (Map.Entry<String, ArrayList<ProbabilityPair>> prevState : this.transitionModel.entrySet()) {
+                    ArrayList<ProbabilityPair> pSValue = prevState.getValue();
+                    ProbabilityPair pair = pSValue.get(pSValue.indexOf(find(pSValue, states.getKey())));
+                    double max_tr_prob = SequenceProb.get(t - 1).get(prevState.getKey()).getProb() * pair.getValue();
+                    if (max_tr_prob > max) {
+                        max = max_tr_prob;
+                        stateWithMax = prevState.getKey();
+                    }
+                }
+
+                ProbabilityPair pair = find(this.sensorModel.get(stateWithMax), obs.get(t));
+                double max_prob = max * 0.00001;
+                if (pair != null) {
+                    max_prob = max * pair.getValue();
+                }
+                SequenceProb.get(t).get(states.getKey()).setProb(max_prob);
+                SequenceProb.get(t).get(states.getKey()).setPrevious(stateWithMax);
+
+            }
+        }
+
+//        ArrayList<String> opt = new ArrayList<>();
+//        double max = 0.0;
+//        String previous = null;
+//        for (Map.Entry<String, ProbNode> entries: SequenceProb.get(SequenceProb.size()-1).entrySet()) {
+//            double value = entries.getValue().getProb();
+//            if (max < value) {
+//                max = value;
+//                previous = entries.getValue().getPrevious();
+//            }
+//        }
+
+        return SequenceProb;
+    }
+
     private void reset() {
         this.transitionModel = new HashMap<>();
         this.sensorModel = new HashMap<>();
